@@ -4,25 +4,15 @@
             "name" : "user",
             "onCreate" : {
                 "type" : "text/javascript",
-                "source" : "require('onCreateUser').setDefaultFields(object);require('roles/conditionalRoles').createConditionalGrantsForUser(object, 'roles');require('onCreateUser').emailUser(object);"
+                "source" : "require('onCreateUser').setDefaultFields(object);require('roles/conditionalRoles').createConditionalGrantsForUser(object, 'roles');require('onCreateUser').emailUser(object);require('roles/effectiveAuthzRoles').calculateEffectiveAuthzRoles(object, 'effectiveAuthzRoles');"
             },
             "onUpdate" : {
                 "type" : "text/javascript",
-                "source" : "require('onUpdateUser').preserveLastSync(object, oldObject, request);require('roles/conditionalRoles').updateConditionalGrantsForUser(object, 'roles');require('onUpdateUser').createNotification(object, oldObject);"
-            },
-            "onDelete" : {
-                "type" : "text/javascript",
-                "file" : "onDelete-user-cleanup.js"
+                "source" : "require('onUpdateUser').preserveLastSync(object, oldObject, request);require('roles/conditionalRoles').updateConditionalGrantsForUser(object, 'roles');require('roles/effectiveAuthzRoles').calculateEffectiveAuthzRoles(object, 'effectiveAuthzRoles');"
             },
             "postDelete" : {
                 "type" : "text/javascript",
-                "source" : "require('postDelete-idp-cleanup').removeConnectedIdpData(oldObject, resourceName, request);"
-            },
-            "actions" : {
-                "resetPassword": {
-                    "type": "text/javascript",
-                    "source": "require('resetPassword').sendMail(object);"
-                }
+                "source" : "require('postDelete-idp-cleanup').removeConnectedIdpData(oldObject, resourceName, request);require('postDelete-notification-cleanup').removeConnectedNotificationData(oldObject, resourceName, request);"
             },
             "schema" : {
                 "id" : "urn:jsonschema:org:forgerock:openidm:managed:api:User",
@@ -52,6 +42,7 @@
                     "reports",
                     "effectiveRoles",
                     "effectiveAssignments",
+                    "effectiveAuthzRoles",
                     "lastSync",
                     "kbaInfo",
                     "preferences",
@@ -86,7 +77,7 @@
                         "minLength" : 8,
                         "userEditable" : true,
                         "encryption" : {
-                            "key" : "openidm-sym-default"
+                            "purpose": "password.encryption"
                         },
                         "scope" : "private",
                         "isProtected": true,
@@ -356,13 +347,12 @@
                             },
                             "resourceCollection" : [
                                 {
-                                    "path" : "repo/internal/role",
+                                    "path" : "internal/role",
                                     "label" : "Internal Role",
                                     "query" : {
                                         "queryFilter" : "true",
                                         "fields" : [
-                                            "_id",
-                                            "description"
+                                            "name"
                                         ]
                                     }
                                 },
@@ -463,6 +453,20 @@
                         "items" : {
                             "type" : "object",
                             "title" : "Effective Assignments Items"
+                        }
+                    },
+                    "effectiveAuthzRoles" : {
+                        "type" : "array",
+                        "title" : "Effective Authz Roles",
+                        "description" : "Effective Authz Roles",
+                        "viewable" : false,
+                        "returnByDefault" : true,
+                        "isVirtual" : true,
+                        "usageDescription" : "",
+                        "isPersonal" : false,
+                        "items" : {
+                            "type" : "object",
+                            "title" : "Effective Roles and Privileges"
                         }
                     },
                     "telephoneNumber" : {
@@ -656,6 +660,8 @@
                   "createDate",
                   "lastChanged"
               ]
+            },
+            "notifications" : {
             }
         },
         {

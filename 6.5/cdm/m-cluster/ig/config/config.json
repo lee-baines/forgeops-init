@@ -44,7 +44,7 @@
               "password": "password"
           },
           "sessionCache": {
-              "enabled": true
+              "enabled": false
           }
       }
     },

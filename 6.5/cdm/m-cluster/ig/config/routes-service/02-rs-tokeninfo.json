@@ -25,7 +25,7 @@
               }
             },
             "cache": {
-              "enabled": true,
+              "enabled": false,
               "defaultTimeout": "1 hour",
               "maxTimeout": "1 day"
             }
